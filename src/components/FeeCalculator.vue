@@ -2,7 +2,7 @@
   <section class='section calculator'>
     <div class='container'>
       <div class='column is-one-third'>
-        <h1>Membership Fee Calculator</h1>
+        <h1 class="title">Membership Fee Calculator</h1>
         <form id='calculator'>
           <div class='field'>
             <div class='control'>
@@ -122,7 +122,7 @@ export default {
         that.validateForm(e)
       }, 100)
     },
-    validateForm (e) {
+    validateForm () {
       this.error = false
       if (this.rentAmount.length > 4) {
         this.rentAmount = this.rentAmount.slice(0, 4)
@@ -162,6 +162,10 @@ export default {
   watch: {
     branch () {
       this.setFixedAmount()
+    },
+    rentPeriod () {
+      this.validateForm()
+      this.calculate()
     }
   },
   computed: {
