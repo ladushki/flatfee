@@ -20,10 +20,9 @@
             </div>
           </div>
           <div class='field' v-if='!fixedAmount'>
+            <label class='label'>I pay:</label>
             <div class='control'>
-              <label class='label'>I pay:</label>
-              <label class='radio'><input type='radio' name='rentType' v-model='rentPeriod' value='month'>
-                Monthly</label>
+              <label class='radio'><input type='radio' name='rentType' v-model='rentPeriod' value='month'>Monthly</label>
               <label class='radio'><input type='radio' name='rentType' v-model='rentPeriod' value='week'> Weekly</label>
             </div>
           </div>
@@ -99,13 +98,14 @@ export default {
     findFixedFee (branch) {
       let fee = false
       let item = treeHelper.findNodeByName(branch, this.organisation)
-      fee = this.getFixedFee(item)
+      fee = this.getFixedFeeAmount(item)
+
       if (fee === false && item) {
         fee = this.findFixedFee(item.parent)
       }
       return fee
     },
-    getFixedFee (item) {
+    getFixedFeeAmount (item) {
       if (item && item.config) {
         if (item.config.has_fixed_membership_fee) {
           return item.config.fixed_membership_fee_amount
@@ -117,16 +117,16 @@ export default {
     },
     checkTypingForm (e) {
       clearTimeout(timeout)
-      const that = this
+
       timeout = setTimeout(() => {
-        that.validateForm(e)
+        if (this.rentAmount.length > 4) {
+          this.rentAmount = this.rentAmount.slice(0, 4)
+        }
+        this.validateForm()
       }, 100)
     },
     validateForm () {
       this.error = false
-      if (this.rentAmount.length > 4) {
-        this.rentAmount = this.rentAmount.slice(0, 4)
-      }
       if (this.rentPeriod === 'week') {
         if (!helpers.between(this.rentAmount, this.weekRage.min, this.weekRage.max)) {
           this.error = 'Your weekly rent has to be between ' + this.weekRage.min + ' & ' + this.weekRage.max
@@ -140,15 +140,12 @@ export default {
     },
     calculate () {
       let fee = 0
-
       this.setFixedAmount()
 
       if (this.fixedAmount) {
         fee = this.fixedAmount
       } else {
-        if (this.rentAmount) {
-          fee = this.rentPeriod === 'month' ? ((this.amount * 12) / 52) : this.amount
-        }
+        fee = this.rentPeriod === 'month' ? ((this.amount * 12) / 52) : this.amount
       }
       return (fee < this.minFee && fee > 0) ? this.minFee : fee
     },
@@ -172,19 +169,10 @@ export default {
     amount () {
       if (this.rentAmount <= 0) return 0
       if (this.rentPeriod === 'week') {
-        if (this.rentAmount < this.weekRage.min) {
-          return this.weekRage.min
-        } else if (this.rentAmount > this.weekRage.max) {
-          return this.weekRage.max
-        }
+        return helpers.returnLimit(this.rentAmount, this.weekRage.min, this.weekRage.max)
       } else {
-        if (this.rentAmount < this.monthRage.min) {
-          return this.monthRage.min
-        } else if (this.rentAmount > this.monthRage.max) {
-          return this.monthRage.max
-        }
+        return helpers.returnLimit(this.rentAmount, this.monthRage.min, this.monthRage.max)
       }
-      return this.rentAmount
     },
     membershipFee () {
       return Math.round(this.calculate() * this.vat)
