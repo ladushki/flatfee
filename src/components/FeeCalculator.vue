@@ -63,7 +63,7 @@ export default {
       weekRage: {min: 25, max: 2000},
       monthRage: {min: 110, max: 8660},
       minFee: 120,
-      vat: 1.2
+      vat: 1.2 // default VAT 20%
     }
   },
   mounted () {
@@ -75,7 +75,7 @@ export default {
         this.organisation = data
         this.setTree(this.organisation)
         this.setBranches(this.organisationalTree)
-      })
+      }).bind(this)
     },
     setTree (data) {
       try {
