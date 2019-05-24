@@ -1,38 +1,39 @@
 <template>
-  <section class='section calculator'>
-      <div class='column is-one-third'>
-        <h1 class="title">Membership Fee Calculator</h1>
-        <form id='calculator'>
-          <b-field label='My Landroad'>
-              <v-select ref='select'  expanded
-                placeholder='No landloard' label='name' code='name'
-                :options='branches'
-                v-model='branch'><span slot='no-options'>No results</span>
-              </v-select>
+  <section class="section calculator">
+    <div class="column is-one-third">
+      <h1 class="title">Membership Fee Calculator</h1>
+      <form id="calculator">
+        <b-field label="My Landroad">
+          <v-select ref="select" expanded
+                    placeholder="No landloard" label="name" code="name"
+                    :options="branches"
+                    v-model="branch"><span slot="no-options">No results</span>
+          </v-select>
+        </b-field>
+        <label class="label" v-if="!fixedAmount">I pay: </label>
+        <b-field v-if="!fixedAmount">
+          <b-radio-button v-model="rentPeriod" native-value="month">
+            <span>Monthly</span>
+          </b-radio-button>
+          <b-radio-button v-model="rentPeriod" native-value="week">
+            <span>Weekly</span>
+          </b-radio-button>
+        </b-field>
+        <div class="column is-half">
+          <b-field label="The Amount in £: " v-if="!fixedAmount">
+            <b-numberinput v-model="rentAmount"
+                           id="rentAmount"
+                           size="is-small"
+                           :min="minRent" :max="maxRent"
+                           v-bind:type="error ? 'is-danger':'is-dark'"
+                           v-on:input="checkTypingForm"></b-numberinput>
           </b-field>
-          <label class="label"  v-if='!fixedAmount'>I pay: </label>
-          <b-field  v-if='!fixedAmount'>
-            <b-radio-button v-model="rentPeriod" native-value="month">
-              <span>Monthly</span>
-            </b-radio-button>
-            <b-radio-button v-model="rentPeriod" native-value="week">
-              <span>Weekly</span>
-            </b-radio-button>
-          </b-field>
-             <div class="column is-half"><b-field label="The Amount in £: " v-if='!fixedAmount'>
-              <b-numberinput v-model='rentAmount'
-                             id="rentAmount"
-                             size='is-small'
-                             :min='minRent' :max='maxRent'
-                             v-bind:type="error ? 'is-danger':'is-dark'"
-                             v-on:input='checkTypingForm'></b-numberinput>
-              </b-field>
-             </div>
-          <div v-if='membershipFee>0' class="membershipFee">
-            <div class="number"> My membership fee would be: £ {{ membershipFee }}</div>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div v-if="membershipFee>0" class="membershipFee">
+          <div class="number"> My membership fee would be: £ {{ membershipFee }}</div>
+        </div>
+      </form>
+    </div>
   </section>
 </template>
 
