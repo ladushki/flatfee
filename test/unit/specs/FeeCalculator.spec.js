@@ -60,7 +60,7 @@ describe('FeeCalculator.vue', () => {
     expect(vm.findFixedFee('branch_k')).toBe(25000)
   })
   it('check week amount', () => {
-    vm.weekRage = {min: 5, max: 10}
+    vm.config.weekRage = {min: 5, max: 10}
     vm.rentPeriod = 'week'
     vm.rentAmount = 0
     expect(vm.amount).toBe(0)
@@ -72,7 +72,7 @@ describe('FeeCalculator.vue', () => {
     expect(vm.amount).toBe(7)
   })
   it('check month amount', () => {
-    vm.monthRage = {min: 10, max: 100}
+    vm.config.monthRage = {min: 10, max: 100}
     vm.rentPeriod = 'month'
     vm.rentAmount = 0
     expect(vm.amount).toBe(0)

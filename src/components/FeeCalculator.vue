@@ -60,23 +60,34 @@ export default {
       branch: null,
       error: null,
       fixedAmount: false,
-      weekRage: {min: 25, max: 2000},
-      monthRage: {min: 110, max: 8660},
-      minFee: 120,
-      vat: 1.2 // default VAT 20%
+      config: {
+        weekRage: {min: 25, max: 2000},
+        monthRage: {min: 110, max: 8660},
+        minFee: 120,
+        vat: 1.2 // default VAT 20%
+      }
     }
   },
   mounted () {
     this.fetchData()
   },
   methods: {
+    /**
+     * returns json data
+     * @return object
+     */
     fetchData () {
+      let that = this
       return import('../json/organisation.json').then((data) => {
-        this.organisation = data
-        this.setTree(this.organisation)
-        this.setBranches(this.organisationalTree)
-      }).bind(this)
+        that.organisation = data
+        that.setTree(this.organisation)
+        that.setBranches(this.organisationalTree)
+      })
     },
+    /**
+     * organize the data hierarchically
+     * @param data
+     */
     setTree (data) {
       try {
         const tree = treeHelper.createTree(data)
@@ -89,15 +100,24 @@ export default {
         console.log(e.err)
       }
     },
+    /**
+     * gets branches from a tree
+     * @param tree
+     */
     setBranches (tree) {
       this.branches = treeHelper.findBranches(tree)
       if (typeof this.branches !== 'object') {
         throw TypeError('There are no branches')
       }
     },
-    findFixedFee (branch) {
+    /**
+     * checks tree recursively for fixed fee and returns false or fee
+     * @param branchName
+     * @return {false|number}
+     */
+    findFixedFee (branchName) {
       let fee = false
-      let item = treeHelper.findNodeByName(branch, this.organisation)
+      let item = treeHelper.findNodeByName(branchName, this.organisation)
       fee = this.getFixedFeeAmount(item)
 
       if (fee === false && item) {
@@ -105,6 +125,11 @@ export default {
       }
       return fee
     },
+    /**
+     * checkes config & returns fee or false if no config
+     * @param item
+     * @return {boolean|number}
+     */
     getFixedFeeAmount (item) {
       if (item && item.config) {
         if (item.config.has_fixed_membership_fee) {
@@ -115,6 +140,10 @@ export default {
       }
       return false
     },
+    /**
+     * validates on typing
+     * @param e
+     */
     checkTypingForm (e) {
       clearTimeout(timeout)
 
@@ -125,19 +154,27 @@ export default {
         this.validateForm()
       }, 100)
     },
+    /**
+     * validates form
+     * @return {boolean}
+     */
     validateForm () {
       this.error = false
       if (this.rentPeriod === 'week') {
-        if (!helpers.between(this.rentAmount, this.weekRage.min, this.weekRage.max)) {
+        if (!helpers.between(this.rentAmount, this.config.weekRage.min, this.config.weekRage.max)) {
           this.error = true
         }
       } else {
-        if (!helpers.between(this.rentAmount, this.monthRage.min, this.monthRage.max)) {
+        if (!helpers.between(this.rentAmount, this.config.monthRage.min, this.config.monthRage.max)) {
           this.error = true
         }
       }
       return !this.error
     },
+    /**
+     * calculates fee base
+     * @return {number}
+     */
     calculate () {
       let fee = 0
       this.setFixedAmount()
@@ -147,8 +184,11 @@ export default {
       } else {
         fee = this.rentPeriod === 'month' ? ((this.amount * 12) / 52) : this.amount
       }
-      return (fee < this.minFee && fee > 0) ? this.minFee : fee
+      return (fee < this.config.minFee && fee > 0) ? this.config.minFee : fee
     },
+    /**
+     * sets fixedAmount
+     */
     setFixedAmount () {
       this.fixedAmount = false
       if (this.branch) {
@@ -168,22 +208,38 @@ export default {
     }
   },
   computed: {
+    /**
+     * get user input & mutate to min or max value according type & settings
+     * @return {number}
+     */
     amount () {
       if (this.rentAmount <= 0) return 0
       if (this.rentPeriod === 'week') {
-        return helpers.returnLimit(this.rentAmount, this.weekRage.min, this.weekRage.max)
+        return helpers.returnLimit(this.rentAmount, this.config.weekRage.min, this.config.weekRage.max)
       } else {
-        return helpers.returnLimit(this.rentAmount, this.monthRage.min, this.monthRage.max)
+        return helpers.returnLimit(this.rentAmount, this.config.monthRage.min, this.config.monthRage.max)
       }
     },
+    /**
+     * gets total fee with vat
+     * @return {number}
+     */
     membershipFee () {
-      return Math.round(this.calculate() * this.vat)
+      return Math.round(this.calculate() * this.config.vat)
     },
+    /**
+     * gets min rent
+     * @return {number}
+     */
     minRent () {
-      return this.rentPeriod === 'month' ? this.monthRage.min : this.weekRage.min
+      return this.rentPeriod === 'month' ? this.config.monthRage.min : this.config.weekRage.min
     },
+    /**
+     * gets max rent
+     * @return {number}
+     */
     maxRent () {
-      return this.rentPeriod === 'month' ? this.monthRage.max : this.weekRage.max
+      return this.rentPeriod === 'month' ? this.config.monthRage.max : this.config.weekRage.max
     }
   }
 }
