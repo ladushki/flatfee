@@ -1,18 +1,24 @@
 import { createLocalVue } from '@vue/test-utils'
 import FeeCalculator from '@/components/FeeCalculator'
-import * as treeHelper from '@/modules/Tree'
+import * as treeHelper from '@/services/Tree'
+import Buefy from 'buefy'
 
 describe('FeeCalculator.vue', () => {
   let localVue, Constructor, vm
 
   beforeEach(() => {
     localVue = createLocalVue()
+    localVue.use(Buefy)
     Constructor = localVue.extend(FeeCalculator)
     vm = new Constructor().$mount()
   })
 
   it('check form for month', () => {
     vm.rentAmount = 50000
+    vm.rentPeriod = 'month'
+    vm.validateForm()
+    expect(vm.error).toBeTruthy()
+    vm.rentAmount = 0
     vm.rentPeriod = 'month'
     vm.validateForm()
     expect(vm.error).toBeTruthy()
@@ -39,7 +45,6 @@ describe('FeeCalculator.vue', () => {
     vm.rentPeriod = 'month'
     vm.validateForm()
     expect(vm.error).not.toBeFalsy()
-    expect(vm.error).toBe('Your monthly rent has to be between ' + vm.monthRage.min + ' & ' + vm.monthRage.max)
   })
 
   it('check form for week', () => {
@@ -47,7 +52,6 @@ describe('FeeCalculator.vue', () => {
     vm.rentPeriod = 'week'
     vm.validateForm()
     expect(vm.error).toBeFalsy()
-    expect(vm.error).not.toBe('Your weekly rent has to be between ' + vm.weekRage.min + ' & ' + vm.weekRage.max)
   })
 
   it('check fixed amount', () => {

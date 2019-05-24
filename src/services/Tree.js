@@ -1,7 +1,9 @@
 export const createTree = function (data) {
   const source = []
   const items = []
-
+  if (!data) {
+    throw Error('No data')
+  }
   for (let i = 0; i < data.length; i++) {
     let item = data[i]
     let name = item['name']

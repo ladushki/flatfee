@@ -1,4 +1,4 @@
-import * as helpers from '@/modules/Helpers'
+import * as helpers from '@/services/Helpers'
 
 describe('Helpers.js', () => {
   it('between', () => {

@@ -1,56 +1,45 @@
 <template>
   <section class='section calculator'>
-    <div class='container'>
       <div class='column is-one-third'>
         <h1 class="title">Membership Fee Calculator</h1>
         <form id='calculator'>
-          <div class='field'>
-            <div class='control'>
-              <label class='label'>The Landroad:</label>
-              <v-select
-                ref='select'
-                placeholder='No landloard'
-                label='name'
-                code='name'
+          <b-field label='My Landroad'>
+              <v-select ref='select'  expanded
+                placeholder='No landloard' label='name' code='name'
                 :options='branches'
-                v-model='branch'
-              >
-                <span slot='no-options'>No results</span>
+                v-model='branch'><span slot='no-options'>No results</span>
               </v-select>
-            </div>
-          </div>
-          <div class='field' v-if='!fixedAmount'>
-            <label class='label'>I pay:</label>
-            <div class='control'>
-              <label class='radio'><input type='radio' name='rentType' v-model='rentPeriod' value='month'>Monthly</label>
-              <label class='radio'><input type='radio' name='rentType' v-model='rentPeriod' value='week'> Weekly</label>
-            </div>
-          </div>
-          <div class='field' v-if='!fixedAmount'>
-            <div class='control'>
-              <label class='label'>The Amount in £: </label>
-              <input v-model='rentAmount' type='number' ref='rent'
-                     v-bind:class="[error ? 'is-danger' : '', 'input']"
-                     v-on:input='checkTypingForm' min='25' max='8660'>
-              <span class='validity'></span>
-              <p class="help is-danger" v-if='error'>
-                {{ error }}
-              </p>
-            </div>
-          </div>
-          <div v-if='membershipFee>0' class='membershipFee'>
-            <div class='number'> My membership fee would be: £ {{ membershipFee }}</div>
+          </b-field>
+          <label class="label"  v-if='!fixedAmount'>I pay: </label>
+          <b-field  v-if='!fixedAmount'>
+            <b-radio-button v-model="rentPeriod" native-value="month">
+              <span>Monthly</span>
+            </b-radio-button>
+            <b-radio-button v-model="rentPeriod" native-value="week">
+              <span>Weekly</span>
+            </b-radio-button>
+          </b-field>
+             <div class="column is-half"><b-field label="The Amount in £: " v-if='!fixedAmount'>
+              <b-numberinput v-model='rentAmount'
+                             id="rentAmount"
+                             size='is-small'
+                             :min='minRent' :max='maxRent'
+                             v-bind:type="error ? 'is-danger':'is-dark'"
+                             v-on:input='checkTypingForm'></b-numberinput>
+              </b-field>
+             </div>
+          <div v-if='membershipFee>0' class="membershipFee">
+            <div class="number"> My membership fee would be: £ {{ membershipFee }}</div>
           </div>
         </form>
       </div>
-    </div>
   </section>
 </template>
 
 <script>
-import organisation from '../json/organisation.json'
-import * as treeHelper from '../modules/Tree'
-import * as helpers from '../modules/Helpers'
+
+import * as treeHelper from '../services/Tree'
+import * as helpers from '../services/Helpers'
 import VueSelect from 'vue-select'
 
 let timeout = null
@@ -62,7 +51,7 @@ export default {
   },
   data () {
     return {
-      organisation: organisation,
+      organisation: null,
       organisationalTree: {},
       branches: [],
       rentAmount: null,
@@ -77,16 +66,26 @@ export default {
     }
   },
   mounted () {
-    this.setTree(this.organisation)
-    this.setBranches(this.organisationalTree)
+    this.fetchData()
   },
   methods: {
+    fetchData () {
+      return import('../json/organisation.json').then((data) => {
+        this.organisation = data
+        this.setTree(this.organisation)
+        this.setBranches(this.organisationalTree)
+      })
+    },
     setTree (data) {
-      const tree = treeHelper.createTree(data)
-      if (tree.hasOwnProperty('client')) {
-        this.organisationalTree = tree.client
-      } else {
-        throw TypeError('Organisational data is in wrong format')
+      try {
+        const tree = treeHelper.createTree(data)
+        if (tree && tree.hasOwnProperty('client')) {
+          this.organisationalTree = tree.client
+        } else {
+          throw TypeError('Organisational data is wrong')
+        }
+      } catch (e) {
+        console.log(e.err)
       }
     },
     setBranches (tree) {
@@ -129,14 +128,14 @@ export default {
       this.error = false
       if (this.rentPeriod === 'week') {
         if (!helpers.between(this.rentAmount, this.weekRage.min, this.weekRage.max)) {
-          this.error = 'Your weekly rent has to be between ' + this.weekRage.min + ' & ' + this.weekRage.max
+          this.error = true
         }
       } else {
         if (!helpers.between(this.rentAmount, this.monthRage.min, this.monthRage.max)) {
-          this.error = 'Your monthly rent has to be between ' + this.monthRage.min + ' & ' + this.monthRage.max
+          this.error = true
         }
       }
-      return this.error
+      return !this.error
     },
     calculate () {
       let fee = 0
@@ -161,8 +160,10 @@ export default {
       this.setFixedAmount()
     },
     rentPeriod () {
-      this.validateForm()
-      this.calculate()
+      if (this.rentAmount > 0) {
+        this.validateForm()
+        this.calculate()
+      }
     }
   },
   computed: {
@@ -176,6 +177,12 @@ export default {
     },
     membershipFee () {
       return Math.round(this.calculate() * this.vat)
+    },
+    minRent () {
+      return this.rentPeriod === 'month' ? this.monthRage.min : this.weekRage.min
+    },
+    maxRent () {
+      return this.rentPeriod === 'month' ? this.monthRage.max : this.weekRage.max
     }
   }
 }

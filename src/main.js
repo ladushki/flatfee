@@ -4,11 +4,13 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import _ from 'lodash'
-import './../node_modules/bulma/css/bulma.css'
+import Buefy from 'buefy'
+import 'buefy/dist/buefy.css'
 import 'vue-select/dist/vue-select.css'
 
 Vue.config.productionTip = false
 Object.defineProperty(Vue.prototype, '$_', { value: _ })
+Vue.use(Buefy)
 
 /* eslint-disable no-new */
 new Vue({

@@ -24,6 +24,7 @@
   "dependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015-ie": "^6.7.0",
+    "buefy": "^0.7.6",
     "bulma": "^0.7.5",
     "deepdash": "^4.2.7",
     "eslint-plugin-jsx-a11y": "^6.2.1",
@@ -86,7 +87,7 @@
     "shelljs": "^0.7.6",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
-    "vue-jest": "^1.0.2",
+    "vue-jest": "^2.6.0",
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",

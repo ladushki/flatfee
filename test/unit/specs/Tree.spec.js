@@ -1,6 +1,11 @@
-import * as treeHelper from '@/modules/Tree'
+import * as treeHelper from '@/services/Tree'
 
 describe('TreeHelper.js', () => {
+  it('check tree', () => {
+    expect(() => {
+      treeHelper.createTree(null)
+    }).toThrow()
+  })
   it('find branch', () => {
     const client = [
       {
@@ -38,6 +43,7 @@ describe('TreeHelper.js', () => {
       }
     }
     expect(treeHelper.findNodeByName('division_b', client)).toEqual(a)
+    expect(treeHelper.findNodeByName('division_cb', client)).toBeNull()
   })
   it('get branches', () => {
     const organisation = [
